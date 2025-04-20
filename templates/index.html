@@ -1,27 +1,115 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Gerador de Imagens Shopee</title>
+  <meta charset="UTF-8">
+  <title>Divulgador de Produtos Shopee</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    .produto {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 12px;
+      margin: 10px;
+      max-width: 300px;
+    }
+
+    .produto img {
+      width: 100%;
+      border-radius: 8px;
+    }
+
+    .pinterest-btn {
+      background-color: #bd081c;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .pinterest-btn:hover {
+      background-color: #8c0615;
+    }
+
+    #produtos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+  </style>
 </head>
 <body>
-    <h2>Gerador de Imagens para Pinterest</h2>
-    <form method="POST" enctype="multipart/form-data">
-        <label>Link da imagem do produto:</label><br>
-        <input type="text" name="link"><br><br>
 
-        <label>Título do produto:</label><br>
-        <input type="text" name="titulo"><br><br>
+  <h2>Upload de CSV com produtos da Shopee</h2>
+  <input type="file" id="csvInput" accept=".csv" />
+  <p><strong>Formato do CSV:</strong> titulo,link_afiliado,imagem_url</p>
 
-        <label>Chamada para ação:</label><br>
-        <input type="text" name="chamada"><br><br>
+  <div id="produtos"></div>
 
-        <p><b>OU</b> envie um arquivo CSV com colunas: link, titulo, chamada</p>
-        <input type="file" name="csv_file" accept=".csv"><br><br>
+  <script>
+    document.getElementById("csvInput").addEventListener("change", function (event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
 
-        <button type="submit">Gerar Imagens</button>
-    </form>
+      reader.onload = function (e) {
+        const linhas = e.target.result.split("\n").slice(1); // pula cabeçalho
+        const container = document.getElementById("produtos");
+        container.innerHTML = "";
 
-    <br><a href="/politica-de-privacidade">Política de Privacidade</a>
+        linhas.forEach(linha => {
+          const [titulo, link, imagem] = linha.split(",").map(v => v.trim());
+
+          if (titulo && link && imagem) {
+            const card = document.createElement("div");
+            card.className = "produto";
+            card.innerHTML = `
+              <h3>${titulo}</h3>
+              <img src="${imagem}" alt="${titulo}">
+              <button class="pinterest-btn" onclick="publicarNoPinterest('${link}', '${imagem}', '${titulo}')">📌 Publicar no Pinterest</button>
+            `;
+            container.appendChild(card);
+          }
+        });
+      };
+
+      reader.readAsText(file);
+    });
+
+    async function publicarNoPinterest(produtoLink, imagemURL, titulo) {
+      const token = "SEU_TOKEN_AQUI"; // Substitua pelo token assim que for liberado
+      const board_id = "santosfrancil/skincare"; // Seu board no Pinterest
+
+      const response = await fetch("https://api.pinterest.com/v5/pins", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          board_id: board_id,
+          title: titulo,
+          alt_text: titulo,
+          link: produtoLink,
+          media_source: {
+            source_type: "image_url",
+            url: imagemURL
+          }
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert("✅ Publicado com sucesso no Pinterest!");
+      } else {
+        alert("❌ Erro: " + result.message);
+        console.error(result);
+      }
+    }
+  </script>
 </body>
 </html>
