@@ -1,25 +1,23 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerador de Pins - Pinterest Automator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gerador de Pins</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
       padding: 2rem;
+      background-color: #f9f9f9;
     }
-
     .container {
       max-width: 700px;
       margin: auto;
-      background-color: #fff;
+      background: white;
       padding: 2rem;
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     input, textarea {
       width: 100%;
       padding: 10px;
@@ -27,28 +25,25 @@
       border-radius: 6px;
       border: 1px solid #ccc;
     }
-
     button {
       padding: 10px 20px;
-      color: #fff;
+      background-color: #e60023;
+      color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
     }
-
     .preview {
       border: 1px dashed #ccc;
       padding: 1rem;
       border-radius: 8px;
-      margin-top: 1.5rem;
+      margin-top: 1rem;
     }
-
     .preview img {
       max-width: 100%;
       height: auto;
       border-radius: 8px;
     }
-
     .preview h3 {
       margin-top: 1rem;
     }
@@ -58,7 +53,6 @@
   <div class="container">
     <h2>Gerador de Pins</h2>
 
-    <!-- Botão de conexão com o Pinterest -->
     <button style="margin-bottom: 1rem; background-color: #0073e6;" onclick="conectarComPinterest()">
       🔗 Conectar ao Pinterest
     </button>
@@ -66,10 +60,10 @@
     <input type="text" id="titulo" placeholder="Título do produto">
     <textarea id="descricao" rows="3" placeholder="Descrição do produto"></textarea>
     <input type="text" id="palavrasChave" placeholder="Palavras-chave (separadas por vírgulas)">
-    <input type="text" id="linkAfiliado" placeholder="Link de afiliado da Shopee">
+    <input type="text" id="linkAfiliado" placeholder="Link de afiliado da Shopee" onblur="gerarTituloDescricao()">
     <input type="text" id="imagemUrl" placeholder="URL da imagem do produto">
     <input type="file" id="imagemArquivo" accept="image/*">
-    <button style="background-color: #e60023;" onclick="mostrarPrevia()">Gerar Prévia</button>
+    <button onclick="mostrarPrevia()">Gerar Prévia</button>
 
     <div class="preview" id="preview" style="display:none;">
       <h3>Prévia do Pin</h3>
@@ -80,7 +74,7 @@
       <p><strong>Link de afiliado:</strong> <a id="previewLink" href="#" target="_blank">Ver Produto</a></p>
     </div>
 
-    <button style="margin-top: 1.5rem; background-color: #e60023;" onclick="publicarNoPinterest()">📌 Publicar no Pinterest</button>
+    <button style="margin-top: 1rem; background-color: #e60023;" onclick="publicarNoPinterest()">📌 Publicar no Pinterest</button>
   </div>
 
   <script>
@@ -118,6 +112,28 @@
       document.getElementById('previewLink').href = link;
 
       document.getElementById('preview').style.display = 'block';
+    }
+
+    async function gerarTituloDescricao() {
+      const link = document.getElementById('linkAfiliado').value;
+      if (!link) return;
+
+      try {
+        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(link)}`);
+        const data = await response.json();
+        const html = data.contents;
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+
+        const titulo = doc.querySelector("title")?.innerText || "";
+        const descricao = doc.querySelector('meta[name="description"]')?.content || "";
+
+        if (titulo) document.getElementById('titulo').value = titulo;
+        if (descricao) document.getElementById('descricao').value = descricao;
+      } catch (e) {
+        console.warn("Não foi possível gerar título e descrição automaticamente.", e);
+      }
     }
 
     async function publicarNoPinterest() {
@@ -163,3 +179,4 @@
   </script>
 </body>
 </html>
+
