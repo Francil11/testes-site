@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerador de Imagens Shopee</title>
+</head>
+<body>
+    <h2>Gerador de Imagens para Pinterest</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <label>Link da imagem do produto:</label><br>
+        <input type="text" name="link"><br><br>
+
+        <label>Título do produto:</label><br>
+        <input type="text" name="titulo"><br><br>
+
+        <label>Chamada para ação:</label><br>
+        <input type="text" name="chamada"><br><br>
+
+        <p><b>OU</b> envie um arquivo CSV com colunas: link, titulo, chamada</p>
+        <input type="file" name="csv_file" accept=".csv"><br><br>
+
+        <button type="submit">Gerar Imagens</button>
+    </form>
+
+    <br><a href="/politica-de-privacidade">Política de Privacidade</a>
+</body>
+</html>
