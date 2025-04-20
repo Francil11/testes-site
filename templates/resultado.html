@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Imagens Geradas</title>
+</head>
+<body>
+    <h2>Imagens prontas!</h2>
+    {% for imagem in imagens %}
+        <img src="{{ url_for('static', filename='imagens/' + imagem) }}" width="400"><br><br>
+    {% endfor %}
+    <a href="/">Voltar</a>
+</body>
+</html>
