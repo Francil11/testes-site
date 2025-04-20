@@ -1,27 +1,26 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prévia do Pin - Pinterest Automator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerador de Pins - Pinterest Automator</title>
 
   <!-- Pinterest Tag -->
   <script>
     !function(e){if(!window.pintrk){window.pintrk = function () {
-    window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var
-      n=window.pintrk;n.queue=[],n.version="3.0";var
-      t=document.createElement("script");t.async=!0,t.src=e;var
-      r=document.getElementsByTagName("script")[0];
-      r.parentNode.insertBefore(t,r)}}("https://s.pinimg.com/ct/core.js");
-
-    pintrk('load', '2614373813634');
+      window.pintrk.queue.push(Array.prototype.slice.call(arguments))};
+      var n=window.pintrk;n.queue=[],n.version="3.0";
+      var t=document.createElement("script");t.async=!0,t.src=e;
+      var r=document.getElementsByTagName("script")[0];
+      r.parentNode.insertBefore(t,r);
+    }}("https://s.pinimg.com/ct/core.js");
+    pintrk('load', '2614373813634', {em: ''});
     pintrk('page');
   </script>
   <noscript>
     <img height="1" width="1" style="display:none;" alt=""
-         src="https://ct.pinterest.com/v3/?event=init&tid=2614373813634&noscript=1" />
+      src="https://ct.pinterest.com/v3/?event=init&tid=2614373813634&noscript=1" />
   </noscript>
-  <!-- end Pinterest Tag -->
 
   <style>
     body { font-family: Arial, sans-serif; padding: 2rem; background-color: #f9f9f9; }
@@ -36,52 +35,82 @@
 <body>
   <div class="container">
     <h2>Gerador de Pins</h2>
-    <input type="text" id="titulo" placeholder="Título do produto">
-    <textarea id="descricao" rows="3" placeholder="Descrição do produto"></textarea>
-    <input type="text" id="palavrasChave" placeholder="Palavras-chave (separadas por vírgulas)">
-    <input type="text" id="linkAfiliado" placeholder="Link de afiliado da Shopee">
-    <input type="text" id="imagemUrl" placeholder="URL da imagem do produto">
+    <input type="text" id="linkAfiliado" placeholder="Link de afiliado da Shopee" onchange="gerarTituloDescricao()" />
+
+    <input type="text" id="imagemUrl" placeholder="URL da imagem do produto" />
+    <p style="text-align: center;">OU</p>
+    <input type="file" id="imagemUpload" accept="image/*" onchange="carregarImagem()" />
+
+    <input type="text" id="titulo" placeholder="Título do produto (gerado automaticamente)" />
+    <textarea id="descricao" rows="3" placeholder="Descrição do produto (gerada automaticamente)"></textarea>
+    <input type="text" id="palavrasChave" placeholder="Palavras-chave (separadas por vírgulas)" />
+
     <button onclick="mostrarPrevia()">Gerar Prévia</button>
 
     <div class="preview" id="preview" style="display:none;">
       <h3>Prévia do Pin</h3>
-      <img id="previewImg" src="" alt="Prévia do produto">
+      <img id="previewImg" src="" alt="Prévia do produto" />
       <p><strong>Título:</strong> <span id="previewTitulo"></span></p>
       <p><strong>Descrição:</strong> <span id="previewDescricao"></span></p>
       <p><strong>Palavras-chave:</strong> <span id="previewPalavras"></span></p>
-      <p><strong>Link de afiliado:</strong> 
-        <a id="previewLink" href="#" target="_blank" onclick="enviarEventoLead()">Ver Produto</a>
-      </p>
+      <p id="tagAviso" style="color: red;"></p>
+      <p><strong>Link de afiliado:</strong> <a id="previewLink" href="#" target="_blank" onclick="pintrk('track', 'lead')">Ver Produto</a></p>
     </div>
   </div>
 
   <script>
+    const palavrasAltaConversao = ['promoção', 'oferta', 'grátis', 'frete', 'desconto', 'original', 'lançamento'];
+
+    function carregarImagem() {
+      const file = document.getElementById('imagemUpload').files[0];
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        document.getElementById('previewImg').src = e.target.result;
+      };
+      if (file) reader.readAsDataURL(file);
+    }
+
+    function gerarTituloDescricao() {
+      const link = document.getElementById('linkAfiliado').value;
+      const produto = link.split("/").pop().split("?")[0].replace(/[-_]/g, " ");
+      const titulo = "Promoção: " + produto.charAt(0).toUpperCase() + produto.slice(1);
+      const descricao = "Confira esta oferta incrível na Shopee! " + produto;
+
+      document.getElementById('titulo').value = titulo;
+      document.getElementById('descricao').value = descricao;
+    }
+
     function mostrarPrevia() {
       const titulo = document.getElementById('titulo').value;
       const descricao = document.getElementById('descricao').value;
       const palavras = document.getElementById('palavrasChave').value;
       const link = document.getElementById('linkAfiliado').value;
       const imagemUrl = document.getElementById('imagemUrl').value;
+      const fileInput = document.getElementById('imagemUpload');
 
       document.getElementById('previewTitulo').textContent = titulo;
       document.getElementById('previewDescricao').textContent = descricao;
       document.getElementById('previewPalavras').textContent = palavras;
       document.getElementById('previewLink').href = link;
-      document.getElementById('previewImg').src = imagemUrl;
 
+      if (fileInput.files.length > 0) {
+        carregarImagem(); // já atualiza com a imagem
+      } else {
+        document.getElementById('previewImg').src = imagemUrl;
+      }
+
+      verificarPalavrasChave(palavras);
       document.getElementById('preview').style.display = 'block';
     }
 
-    function enviarEventoLead() {
-      const titulo = document.getElementById('titulo').value;
-      const descricao = document.getElementById('descricao').value;
-      const palavras = document.getElementById('palavrasChave').value;
-
-      pintrk('track', 'lead', {
-        title: titulo,
-        description: descricao,
-        keywords: palavras
-      });
+    function verificarPalavrasChave(palavras) {
+      const palavrasSeparadas = palavras.toLowerCase().split(',').map(p => p.trim());
+      const fracas = palavrasSeparadas.filter(p => !palavrasAltaConversao.includes(p));
+      if (fracas.length > 0) {
+        document.getElementById('tagAviso').textContent = "Sugestões melhores para conversão: " + palavrasAltaConversao.join(', ');
+      } else {
+        document.getElementById('tagAviso').textContent = "👍 Suas tags são fortes para conversão!";
+      }
     }
   </script>
 </body>
